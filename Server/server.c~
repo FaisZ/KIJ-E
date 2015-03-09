@@ -202,5 +202,6 @@ int main ()
 		bzero(&clientaddress,sizeof(clientaddress));
 		listen (socket_fd,20);
 		client_socket_fd = accept(socket_fd,(struct sockaddr*)&clientaddress,(socklen_t*)&ukuran_client);
+		
 	}	
 }
