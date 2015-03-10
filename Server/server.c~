@@ -180,12 +180,30 @@ typedef struct linkedlistthread
 	}
 } linkedlistthread;
 
+typedef struct buat_parsing_ke_thread_t
+{
+	
+} buat_parsing_ke_thread_t;
+
+void * berhubunganDenganKlien(void * parameter)
+{
+	
+}
 
 int main ()
 {
+	linkedlistklien simpanklien;
+	simpanklien.jumlah = 0;
+	simpanklien.depan = NULL;
+	simpanklien.belakang = NULL;
+	linkedlistthread simpanthread;
+	simpanthread.jumlah = 0;
+	simpanthread.depan = NULL;
+	simpanthread.belakang = NULL;
 	int socket_fd;
 	int client_socket_fd;
-	int ukuran_client;	
+	int ukuran_client;
+	pthread_t thread_now;	
 
 	struct sockaddr_in serveraddress;
 	bzero(&serveraddress,sizeof(serveraddress));
@@ -202,6 +220,6 @@ int main ()
 		bzero(&clientaddress,sizeof(clientaddress));
 		listen (socket_fd,20);
 		client_socket_fd = accept(socket_fd,(struct sockaddr*)&clientaddress,(socklen_t*)&ukuran_client);
-		
+		pthread_create();
 	}	
 }
