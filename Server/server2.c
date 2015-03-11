@@ -123,7 +123,7 @@ linkedlistklien_t simpanklien;
 typedef struct argu_t
 {
 	int thread_id_number;
-	char message[400];
+	char message[1000];
 } argu_t;
 
 void * sendToClient(void * ptr_argument)
@@ -223,8 +223,26 @@ int main ()
 			strcat(namaklien, namaklientemp);
 		}
 		pthread_t * ptr_thread_terima = (pthread_t *)malloc(sizeof(pthread_t));				
-		simpanklien.push_back(clientaddress, namaklien, client_socket_fd, ptr_thread_terima);		
-		pthread_create(ptr_thread_terima, NULL, receiveFromClient, (void *)&simpanklien.number_now);
+		simpanklien.push_back(clientaddress, namaklien, client_socket_fd, ptr_thread_terima);
 		
-	}	
+		char online_users[1000];
+		int i,j;
+		strcpy(online_users,"");
+		for (i=0;i<simpanklien.jumlah;i++)
+		{
+			strcat(online_users,"\n");
+			strcat(online_users,simpanklien.namaklien);
+		}
+		pthread_t thread[simpanklien.jumlah];
+		argu_t argu_var[simpanklien.jumlah];
+		for (i=0;i<simpanklien.jumlah;i++)
+		{
+			argu_var[i].thread_id_number = simpanklien.atIndex(i).number;
+			strcpy(argu_var[i].message, online_users);
+			pthread_create(&thread[i], NULL, sendToClient, (void *)&argu_var[i]);
+		}		
+		
+		pthread_create(ptr_thread_terima, NULL, receiveFromClient, (void *)&simpanklien.number_now);
+	}
+	return 0;	
 }
