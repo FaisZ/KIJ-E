@@ -21,23 +21,27 @@ typedef struct linkedlistklien_t
 	int jumlah;
 	int number_now;
 	nodeklien * depan;
-	nodeklien * belakang;
+	nodeklien * belakang;	
+} linkedlistklien_t;
+
+linkedlistklien_t simpanklien;
+
 	void push_back(struct sockaddr_in alamatklien, 
 			char namaklien[], 
 			int client_socket_fd,  
 			pthread_t * ptr_thread_terima)
 	{
-		if (jumlah==0)
+		if (simpanklien.jumlah==0)
 		{
-			depan = (nodeklien *)malloc(sizeof(nodeklien));
-			depan->alamatklien = alamatklien;
-			strcpy(depan->namaklien, namaklien);
-			depan->client_socket_fd = client_socket_fd;
-			depan->ptr_thread_terima = ptr_thread_terima;
-			depan->next = NULL;
-			depan->prev = NULL;
-			depan->number = number_now;
-			belakang = depan;
+			simpanklien.depan = (nodeklien *)malloc(sizeof(nodeklien));
+			simpanklien.depan->alamatklien = alamatklien;
+			strcpy(simpanklien.depan->namaklien, namaklien);
+			simpanklien.depan->client_socket_fd = client_socket_fd;
+			simpanklien.depan->ptr_thread_terima = ptr_thread_terima;
+			simpanklien.depan->next = NULL;
+			simpanklien.depan->prev = NULL;
+			simpanklien.depan->number = simpanklien.number_now;
+			simpanklien.belakang = simpanklien.depan;
 		}
 		else
 		{
@@ -48,42 +52,42 @@ typedef struct linkedlistklien_t
 			temp->client_socket_fd = client_socket_fd;
 			temp->ptr_thread_terima = ptr_thread_terima;
 			temp->next = NULL;
-			temp->prev = belakang;
-			temp->number = number_now;
-			belakang->next = temp;
-			belakang = temp;
+			temp->prev = simpanklien.belakang;
+			temp->number = simpanklien.number_now;
+			simpanklien.belakang->next = temp;
+			simpanklien.belakang = temp;
 		}
-		jumlah++;
-		number_now++;
+		simpanklien.jumlah++;
+		simpanklien.number_now++;
 	}
 	void deleteAtNumber(int number)
 	{
-		if (jumlah==0) return;		
-		else if (jumlah==1)
+		if (simpanklien.jumlah==0) return;		
+		else if (simpanklien.jumlah==1)
 		{
-			free(depan);
-			depan = NULL;
-			belakang = NULL;
-			jumlah = 0;
+			free(simpanklien.depan);
+			simpanklien.depan = NULL;
+			simpanklien.belakang = NULL;
+			simpanklien.jumlah = 0;
 		}
 		else
 		{
 			nodeklien * temp;
-			temp = depan;
+			temp = simpanklien.depan;
 			while (temp!=NULL && number!=temp->number)
 			{
 				temp = temp->next;
 			}
-			if (temp==depan)
+			if (temp==simpanklien.depan)
 			{
 				temp->next->prev = NULL;
-				depan = temp->next;
+				simpanklien.depan = temp->next;
 				free(temp);
 			}
-			else if (temp==belakang)
+			else if (temp==simpanklien.belakang)
 			{
 				temp->prev->next = NULL;
-				belakang = temp->prev;
+				simpanklien.belakang = temp->prev;
 				free(temp);
 			}
 			else
@@ -92,13 +96,13 @@ typedef struct linkedlistklien_t
 				temp->next->prev = temp->prev;
 				free(temp);
 			}
-			jumlah--;
+			simpanklien.jumlah--;
 		}
 	}
 	nodeklien atNumber(int number)
 	{
 		nodeklien * temp;
-		temp = depan;
+		temp = simpanklien.depan;
 		while (temp!=NULL && number!=temp->number)
 		{
 			temp = temp->next;
@@ -109,16 +113,13 @@ typedef struct linkedlistklien_t
 	{
 		int i,j;
 		nodeklien * temp;
-		temp = depan;
+		temp = simpanklien.depan;
 		for (i=0;i<index;i++)
 		{
 			temp = temp->next;
 		}
 		return *temp;
 	}
-} linkedlistklien_t;
-
-linkedlistklien_t simpanklien;
 
 typedef struct argu_t
 {
@@ -132,7 +133,7 @@ void * sendToClient(void * ptr_argument)
 	int thread_id_number = ptr_argu_var->thread_id_number;
 	char pesan[200];
 	strcpy(pesan,ptr_argu_var->message);
-	write(simpanklien.atNumber(thread_id_number).client_socket_fd, pesan, strlen(pesan));
+	write(atNumber(thread_id_number).client_socket_fd, pesan, strlen(pesan));
 	return NULL;
 }
 
@@ -146,7 +147,7 @@ void * receiveFromClient(void * ptr_argument)
 		char pesantemp[100];
 		char pesan[200];
 		strcpy(pesan,"");
-		while ((banyak_byte = read(simpanklien.atNumber(thread_id_number).client_socket_fd, pesantemp, 90))>0)
+		while ((banyak_byte = read(atNumber(thread_id_number).client_socket_fd, pesantemp, 90))>0)
 		{
 			pesantemp[banyak_byte] = '\0';
 			strcat(pesan,pesantemp);
@@ -162,11 +163,12 @@ void * receiveFromClient(void * ptr_argument)
 			}
 			for (i=0;i<simpanklien.jumlah;i++)
 			{
-				if (strcmp(tujuan,simpanklien.atIndex(i).namaklien)==0)
+				char * namaklien = atIndex(i).namaklien; 
+				if (strcmp(tujuan,namaklien)==0)
 				{
 					pthread_t thread;
 					argu_t argu_var;
-					argu_var.thread_id_number = simpanklien.atIndex(i).number;
+					argu_var.thread_id_number = atIndex(i).number;
 					strcpy(argu_var.message, pesan);
 					pthread_create(&thread, NULL, sendToClient, (void *)&argu_var);	
 				}
@@ -179,7 +181,7 @@ void * receiveFromClient(void * ptr_argument)
 			argu_t argu_var[simpanklien.jumlah];
 			for (i=0;i<simpanklien.jumlah;i++)
 			{
-				argu_var[i].thread_id_number = simpanklien.atIndex(i).number;
+				argu_var[i].thread_id_number = atIndex(i).number;
 				strcpy(argu_var[i].message, pesan);
 				pthread_create(&thread[i], NULL, sendToClient, (void *)&argu_var[i]);
 			}
@@ -223,7 +225,7 @@ int main ()
 			strcat(namaklien, namaklientemp);
 		}
 		pthread_t * ptr_thread_terima = (pthread_t *)malloc(sizeof(pthread_t));				
-		simpanklien.push_back(clientaddress, namaklien, client_socket_fd, ptr_thread_terima);
+		push_back(clientaddress, namaklien, client_socket_fd, ptr_thread_terima);
 		
 		char online_users[1000];
 		int i,j;
@@ -231,13 +233,13 @@ int main ()
 		for (i=0;i<simpanklien.jumlah;i++)
 		{
 			strcat(online_users,"\n");
-			strcat(online_users,simpanklien.namaklien);
+			strcat(online_users,atIndex(i).namaklien);
 		}
 		pthread_t thread[simpanklien.jumlah];
 		argu_t argu_var[simpanklien.jumlah];
 		for (i=0;i<simpanklien.jumlah;i++)
 		{
-			argu_var[i].thread_id_number = simpanklien.atIndex(i).number;
+			argu_var[i].thread_id_number = atIndex(i).number;
 			strcpy(argu_var[i].message, online_users);
 			pthread_create(&thread[i], NULL, sendToClient, (void *)&argu_var[i]);
 		}		
