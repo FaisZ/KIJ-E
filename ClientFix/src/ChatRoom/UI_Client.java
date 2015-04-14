@@ -180,7 +180,9 @@ public class UI_Client extends javax.swing.JFrame {
                 data.setDaemon(true);
                 data.nama = nama;
                 data.start();
-                output.writeUTF(nama);
+                //output.writeUTF(nama + "\r");
+                tulis(output, nama + "\r");
+                //
                 this.Chat_Area.append(data.nama +" has connected to server\n");
                 this.Connect_btn.setEnabled(false);
                 this.Exit_Btn.setEnabled(true);
@@ -193,6 +195,23 @@ public class UI_Client extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_Connect_btnActionPerformed
  
+    public void tulis(DataOutputStream output, String message)
+    {
+    	try
+    	{
+	    	for (int i=0;i<message.length();i++)
+	    	{
+	    		char c;
+	    		c = message.charAt(i);
+	    		output.write((int)c);
+	    	}
+    	}
+    	catch (Exception e)
+    	{
+    		
+    	}
+    }
+    
     public void cabut()
     {
        if(socket==null)System.exit(1);
@@ -201,7 +220,9 @@ public class UI_Client extends javax.swing.JFrame {
         
         try
         {
-            output.writeUTF(Dis);
+            //output.writeUTF(Dis + "\r");
+        	tulis(output, Dis + "\r");
+        	//
             socket.close();            
         }
         
@@ -228,24 +249,33 @@ public class UI_Client extends javax.swing.JFrame {
         if (message.contains("@"))
         {
             ke = nama + " ke " + tujuanpesan.getSelectedItem().toString() + " : " + Text_Field.getText();
-            
-            try{
+            try
+            {
                 //this.Chat_Area.append(message);
-                output.writeUTF(message);
-                this.writelog(ke);
+                //output.writeUTF(message + "\r");
+                tulis(output, message + "\r");
+                //
+            	this.writelog(ke);
                 this.Text_Field.setText("");
             }
-            catch(Exception e){}
+            catch(Exception e)
+            {
+            	
+            }
         }
         else 
         {
             try{
                 //this.Chat_Area.append(message);
-                output.writeUTF(message);
-                this.Text_Field.setText("");
+                //output.writeUTF(message + "\r");
+                tulis(output, message + "\r");
+                //
+            	this.Text_Field.setText("");
             }
             catch(Exception e)
-            {}
+            {
+            	
+            }
         }        
     }//GEN-LAST:event_Send_btnActionPerformed
 
@@ -256,8 +286,10 @@ public class UI_Client extends javax.swing.JFrame {
 
         try
         {
-            output.writeUTF(Dis);
-            socket.close();
+            //output.writeUTF(Dis + "\r");
+            tulis(output, Dis + "\r");
+        	//
+        	socket.close();
             data.stop();
             this.Connect_btn.setEnabled(true);
             this.Exit_Btn.setEnabled(false);
