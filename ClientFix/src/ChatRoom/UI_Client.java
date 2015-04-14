@@ -12,7 +12,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.io.FileReader;
-
+//library untuk enkripsi
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.Cipher;
 
 public class UI_Client extends javax.swing.JFrame {
     private Socket socket = null;
@@ -23,7 +28,9 @@ public class UI_Client extends javax.swing.JFrame {
     DataInputStream input = null;
     DataOutputStream output = null;
     JFileChooser cus;
-    
+    //keperluan enkripsi
+    static String IV = "AAAAAAAAAAAAAAAA";
+    static String encryptionKey = "0123456789abcdef";
     public UI_Client() {
         initComponents();
         this.Exit_Btn.setEnabled(false);

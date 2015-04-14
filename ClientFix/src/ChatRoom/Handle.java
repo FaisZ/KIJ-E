@@ -113,8 +113,10 @@ public class Handle extends Thread{
             {
                 if(message.substring(0, 1).equals("\n"))
                 {
+                    message = message.substring(1, message.length());
                     user = message.split("\n");
                     this.clientUI.tujuanpesan.removeAllItems();
+                    this.clientUI.tujuanpesan.addItem("Broadcast");
                     for (String user1 : user) 
                     {
                         if(!user1.equalsIgnoreCase(this.nama))
