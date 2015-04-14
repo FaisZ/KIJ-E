@@ -12,6 +12,7 @@ package ChatRoom;
 
 import java.math.BigInteger; 
 import java.util.Random;
+import java.util.Scanner;
 import java.io.*;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -22,17 +23,67 @@ import javax.crypto.Cipher;
   
 public class RSA { 
         
-        public static void main (String[] args) throws IOException, NoSuchAlgorithmException
-        { 
+    private static String input;
+    private static byte[] cipher;
+    private static String plain;
+    private static PublicKey pubKey;
+    private static PrivateKey priKey;
+    
+    public RSA(String in) throws NoSuchAlgorithmException
+    {
+            this.input = in;
             final KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
             keyGen.initialize(512);
             final KeyPair key = keyGen.generateKeyPair();
+            
+            pubKey = key.getPublic();
+            priKey = key.getPrivate();
 
-            String pub = key.getPublic().toString();
-            String pri = key.getPrivate().toString();
-
-            System.out.println("public key: "+pub+" - " + pub.length());
-            System.out.println("private key: "+pri+" - " + pri.length());
-
+            /*System.out.println("public key: "+pubKey.toString()+" - " + pubKey.toString().length());
+            System.out.println("private key: "+priKey.toString()+" - " + priKey.toString().length());
+            
+            System.out.println("Inputan: "+input);*/
+            
+            cipher = encrypt(input, pubKey);
+            //System.out.println("Setelah enkripsi (cipher): " +cipher);
+            
+            plain = decrypt(cipher, priKey);
+            //System.out.println("Setelah dekripsi (plain): " +plain);
+    }
+    
+        public static void main (String[] args)
+        { 
         }    
+        
+        public static byte[] encrypt(String text, PublicKey pub) {
+        byte[] Result = null;
+        try 
+        {
+          final Cipher cipher = Cipher.getInstance("RSA");
+          
+          cipher.init(Cipher.ENCRYPT_MODE, pub);
+          Result = cipher.doFinal(text.getBytes());
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+        return Result;
+      }
+        
+        public static String decrypt(byte[] text, PrivateKey pri) {
+        byte[] decrypted = null;
+        String Result = null;
+        try 
+        {          
+          final Cipher cipher = Cipher.getInstance("RSA");
+
+          cipher.init(Cipher.DECRYPT_MODE, pri);
+          decrypted = cipher.doFinal(text);
+          Result = new String(decrypted);
+
+        } catch (Exception ex) {
+          ex.printStackTrace();
+        }
+
+        return Result;
+  }
 }
