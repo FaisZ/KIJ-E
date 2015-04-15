@@ -25,6 +25,8 @@ public class UI_Client extends javax.swing.JFrame {
     private int PORT = 0;
     private String nama = null;
     private Handle data;
+    public AES aes = new AES();
+    public String key = "qfwqhoihrqoiafdc";
     DataInputStream input = null;
     DataOutputStream output = null;
     JFileChooser cus;
@@ -310,44 +312,36 @@ public class UI_Client extends javax.swing.JFrame {
     private void Send_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Send_btnActionPerformed
         String message;
         String ke;
+        String enkripsi = aes.AesStart(this.Text_Field.getText(),key,"enkripsi");
         if(tujuanpesan.getSelectedIndex() != 0)
         {
-            message = nama+" :  "+this.Text_Field.getText()+"@"+tujuanpesan.getSelectedItem().toString();
+            message = nama+" :"+enkripsi+"@"+tujuanpesan.getSelectedItem().toString();
         }
         else
         {
-            message = nama+" :  "+this.Text_Field.getText();
+            message = nama+" :"+enkripsi;
         }
         if (message.contains("@"))
         {
             ke = nama + " ke " + tujuanpesan.getSelectedItem().toString() + " : " + Text_Field.getText();
-            try
-            {
+            
+            try{
                 //this.Chat_Area.append(message);
-                //output.writeUTF(message + "\r");
-                tulis(output, message + "\r");
-                //
-            	this.writelog(ke);
+                output.writeUTF(message);
+                this.writelog(ke);
                 this.Text_Field.setText("");
             }
-            catch(Exception e)
-            {
-            	
-            }
+            catch(Exception e){}
         }
         else 
         {
             try{
                 //this.Chat_Area.append(message);
-                //output.writeUTF(message + "\r");
-                tulis(output, message + "\r");
-                //
-            	this.Text_Field.setText("");
+                output.writeUTF(message);
+                this.Text_Field.setText("");
             }
             catch(Exception e)
-            {
-            	
-            }
+            {}
         }        
     }//GEN-LAST:event_Send_btnActionPerformed
 

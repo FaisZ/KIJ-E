@@ -7,14 +7,15 @@ package ChatRoom;
 import java.math.*;
 import java.nio.charset.Charset;
 import java.lang.Object;
+import java.util.Arrays;
 /**
  *
  * @author Ahmad Mustofa
  */
 public class AES {
-    static String iv= "aefjnostvzAEGIMO";    
-    char[][] ip = new char[16][2];
-    private static char[][] sbox = 
+    private String initv= "aefjnostvzAEGIMO";    
+    private char[][] word = new char[44][4];
+    private char[][] sbox = 
     {
         {0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76},
         {0xCA, 0x82, 0xC9, 0x7D, 0xFA, 0x59, 0x47, 0xF0, 0xAD, 0xD4, 0xA2, 0xAF, 0x9C, 0xA4, 0x72, 0xC0},
@@ -33,7 +34,7 @@ public class AES {
         {0xE1, 0xF8, 0x98, 0x11, 0x69, 0xD9, 0x8E, 0x94, 0x9B, 0x1E, 0x87, 0xE9, 0xCE, 0x55, 0x28, 0xDF},
         {0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16}
     };
-    private static char[][] inversSbox = 
+    private char[][] inversSbox = 
     {
         {0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76},
         {0xCA, 0x82, 0xC9, 0x7D, 0xFA, 0x59, 0x47, 0xF0, 0xAD, 0xD4, 0xA2, 0xAF, 0x9C, 0xA4, 0x72, 0xC0},
@@ -52,11 +53,11 @@ public class AES {
         {0xE1, 0xF8, 0x98, 0x11, 0x69, 0xD9, 0x8E, 0x94, 0x9B, 0x1E, 0x87, 0xE9, 0xCE, 0x55, 0x28, 0xDF},
         {0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16}
     };
-    public static String toHex(String arg) 
+    public String toHex(String arg) 
     {
         return String.format("%2x", new BigInteger(1, arg.getBytes(/*YOUR_CHARSET?*/)));
     }
-    public static char[][] InputState(String iv)
+    public char[][] InputState(String iv)
     {
         char[] tmp = iv.toCharArray();
         char[][]out = new char[4][4];
@@ -72,7 +73,7 @@ public class AES {
         }
         return out;
     }
-    private static char[][] StateBox(char[][] InputState, String status)
+    private char[][] StateBox(char[][] InputState, String status)
     {
         String tmp,x,y;
         char[] temp;
@@ -85,18 +86,20 @@ public class AES {
         {
             for(int j = 0;j<4;j++)
             {
-                tmp = toHex(Character.toString(InputState[i][j]));
-                temp = tmp.toCharArray();
-                x = Character.toString(temp[0]);
-                //System.out.println("x = "+Integer.valueOf(x, 16));
-                y = Character.toString(temp[1]);
-                //System.out.println("y = "+Integer.valueOf(y, 16));
+                tmp = String.format("%2x",(int)InputState[i][j]);
+                if((int)InputState[i][j]<16)
+                    x = "0";
+                else
+                    x = tmp.substring(0,1);
+                //System.out.println("x = "+x);
+                y = tmp.substring(1,2);
+                //System.out.println("y = "+y);
                 InputState[i][j] = box[Integer.valueOf(x, 16)][Integer.valueOf(y,16)];
             }
         }
         return InputState;
     }
-    private static char[][] ShiftRow(char[][] stateBox,String status)
+    private char[][] ShiftRow(char[][] stateBox,String status)
     {
         char[][] out = new char[4][4];
         for(int i = 0; i < 4;i++)
@@ -135,7 +138,7 @@ public class AES {
         }
         return stateBox;
     }
-    private static char GaloisField(int x,char y)
+    private char GaloisField(int x,char y)
     {
         int tmp;
         String biner = Integer.toBinaryString((int)y);
@@ -159,7 +162,7 @@ public class AES {
         }
         return y;
     }
-    private static char[][] MixColumn(char[][] shiftRow,String status)
+    private char[][] MixColumn(char[][] shiftRow,String status)
     {
         char[][] out = new char[4][4];
         for(int i = 0; i < 4;i++)
@@ -197,11 +200,142 @@ public class AES {
         }
         return out;
     }
-    public static void main(String[] args)
+    private void ExpansionKey(char[][] key)
     {
-        String coba = "abcdefghijklmnop",tmp;
-        char [][] out = InputState(coba).clone(),m = new char[4][4];
-        String x;
+        char[] tmp = new char[4];
+        String temp;
+        for(int i = 0;i<4;i++)
+        {
+            for(int j = 0;j<4;j++)
+                word[i][j] = key[j][i];
+        }
+        for(int i = 4;i<44;i++)
+        {
+            System.arraycopy(word[i-1], 0, tmp, 0, 4);
+            if(i%4==0)
+            {
+                temp = Arrays.toString(word[i-1]);
+                temp = temp.substring(1,temp.length()) + temp.charAt(0);
+                tmp = temp.toCharArray();
+                temp = toHex(temp);
+                char[] tmp1 = temp.toCharArray();
+                int x = 0;
+                for(int j = 0; j < 4;j++)
+                {
+                    tmp[j] = sbox[Integer.valueOf(Character.toString(tmp1[x++]),16 )][Integer.valueOf(Character.toString(tmp1[x++]),16 )];
+                    if(j == 0)
+                        tmp[j] = (char)((int)tmp[j]^(i/4));
+                }
+            }
+            for(int j = 0; j < 4;j++)
+                tmp[j] = (char)((int)tmp[j]^(int)word[i-4][j]);
+            System.arraycopy(tmp, 0, word[i], 0, 4);
+        }
+        /*for(int i = 0;i<44;i++)
+        {
+            for(int j =0;j<4;j++)
+                //System.out.print(Integer.toHexString((int)word[i][j])+" ");
+                System.out.print(word[i][j]+" ");
+            System.out.println();
+        }*/
+    }
+    private char[][] AddRoundKey(char[][] mixColumn,char[][] key)
+    {
+        for(int i = 0;i<4;i++)
+            for(int j =0;j<4;j++)
+            {
+                mixColumn[i][j] = (char)((int)mixColumn[i][j]^(int)key[i][j]);
+            }
+        return mixColumn;
+    }
+    public String AesStart(String pesan,String key,String status)
+    {
+        int modulo = pesan.length()%16,index;
+        String hasilAkhir = "";
+        char[][] hasil = new char[4][4],kunci = new char[4][4];
+        if(modulo != 0)
+        {
+           String padding = "";
+           for(int i = modulo;i<16;i++)
+               padding = padding + "0";
+           pesan = pesan+padding;
+           System.out.println(pesan.length());
+        }
+        modulo = pesan.length()/16;
+        ExpansionKey(InputState(key));
+        String[] input = new String[modulo],output = new String[modulo];
+        char[] tmp;
+        String iv = initv;
+        for(int i = 0;i<modulo;i++)
+        {
+            input[i] = pesan.substring(16*i,16*i+16);
+            tmp = input[i].toCharArray();
+            if(i != 0)
+            {
+                if(status.equalsIgnoreCase("dekripsi"))
+                    iv = input[i-1];
+                else if(status.equalsIgnoreCase("enkripsi"))
+                    iv = output[i-1];
+            }
+            for(int j = 0;j<10;j++)
+            {
+                index = (j+1)*4;
+                for(int x = 0;x<4;x++)
+                {
+                    for(int y = 0;y<4;y++)
+                    {
+                        kunci[x][y] = word[index+y][x];
+                    }
+                }
+                if(j == 0)
+                    hasil = InputState(iv);
+                /////
+                hasil = StateBox(hasil,"enkripsi");
+                /////
+                hasil = ShiftRow(hasil,"enkripsi");
+                /////////
+                if(j != 9)
+                    hasil = MixColumn(hasil,"enkripsi");
+                hasil = AddRoundKey(hasil,kunci);
+            }
+            /*if(i == 0)
+            {
+                for(int x = 0;x<4;x++)
+                {
+                    for(int y = 0;y<4;y++)
+                    {
+                        System.out.print(hasil[x][y]);
+                    }
+                }
+                System.out.println();
+            }*/
+            index = 0;
+            for(int x = 0;x<4;x++)
+            {
+                for(int y = 0;y<4;y++)
+                {
+                    tmp[index] = (char)((int)tmp[index]^(int)hasil[y][x]);
+                    //System.out.print(tmp[index]);
+                    index++;
+                }
+            }
+            //System.out.println();
+            output[i] = new String(tmp);
+            //System.out.println(subPesan[i]);
+        }
+        for(int i = 0;i<modulo;i++)
+            hasilAkhir = hasilAkhir+output[i];
+        return hasilAkhir;
+    }
+    /*public static void main(String[] args)
+    {
+        String pesan = "abcdefghijklmnopabcdefghijklmnopabcdefghijklmnop",key = "qfwqhoihrqoiafdc";
+        String enkripsi = AesStart(pesan,key,"enkripsi");
+        String dekripsi = AesStart(enkripsi,key,"dekripsi");
+        System.out.println(pesan);
+        System.out.println(enkripsi);
+        System.out.println(dekripsi);
+        /*char[][] out = InputState(pesan).clone();
         for(int i = 0; i < 4;i++)
         {
             for(int j = 0; j < 4;j++)
@@ -213,8 +347,7 @@ public class AES {
         {
             for(int j = 0; j < 4;j++)
             {
-                x = String.format("%2x", (int)out[i][j]);
-                System.out.println(x);
+                System.out.println(out[i][j]);
             }
             System.out.println();
         }
@@ -223,8 +356,7 @@ public class AES {
         {
             for(int j = 0; j < 4;j++)
             {
-                x = String.format("%2x", (int)out[i][j]);
-                System.out.println(x);
+                System.out.println(out[i][j]);
             }
             System.out.println();
         }
@@ -233,13 +365,12 @@ public class AES {
         {
             for(int j = 0; j < 4;j++)
             {
-                x = String.format("%2x", (int)out[i][j]);
-                System.out.println(x);
+                System.out.println(out[i][j]);
             }
             System.out.println();
         }
         //char m = GaloisField(2,'a');
         //biner = biner.substring(1,biner.length())+'0';
-        //System.out.println(m);*/
-    }
+        //System.out.println(m);
+    }*/
 }
