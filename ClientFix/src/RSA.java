@@ -86,4 +86,24 @@ public class RSA {
 
         return Result;
   }
+        
+        public static byte[] getCipher()
+        {
+            return RSA.cipher;
+        }
+        
+        public static String getPlain()
+        {
+            return RSA.plain;
+        }
+        
+        public static PublicKey getPubKey()
+        {
+            return RSA.pubKey;
+        }
+        
+        public static PrivateKey getPriKey()
+        {
+            return RSA.priKey;
+        }
 }
