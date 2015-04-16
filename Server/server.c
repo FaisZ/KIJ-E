@@ -8,184 +8,284 @@
 typedef struct nodeklien
 {
 	struct sockaddr_in alamatklien;
-	char namaklien[1000];
+	char namaklien[500];
 	int client_socket_fd;
-	pthread_t * ptr_thread_terima;
+	//pthread_t * ptr_thread_terima;
 	struct nodeklien * next;
 	struct nodeklien * prev;
-	int number;
 } nodeklien;
 
 typedef struct linkedlistklien_t
 {
 	int jumlah;
-	int number_now;
 	nodeklien * depan;
 	nodeklien * belakang;	
 } linkedlistklien_t;
 
 linkedlistklien_t simpanklien;
 
-	void push_back(struct sockaddr_in alamatklien, 
-			char namaklien[], 
-			int client_socket_fd,  
-			pthread_t * ptr_thread_terima)
+void push_back(struct sockaddr_in alamatklien, 
+		char namaklien[], 
+		int client_socket_fd  
+		//pthread_t * ptr_thread_terima
+		)
+{
+	if (simpanklien.jumlah==0)
 	{
-		if (simpanklien.jumlah==0)
-		{
-			simpanklien.depan = (nodeklien *)malloc(sizeof(nodeklien));
-			simpanklien.depan->alamatklien = alamatklien;
-			strcpy(simpanklien.depan->namaklien, namaklien);
-			simpanklien.depan->client_socket_fd = client_socket_fd;
-			simpanklien.depan->ptr_thread_terima = ptr_thread_terima;
-			simpanklien.depan->next = NULL;
-			simpanklien.depan->prev = NULL;
-			simpanklien.depan->number = simpanklien.number_now;
-			simpanklien.belakang = simpanklien.depan;
-		}
-		else
-		{
-			nodeklien * temp;
-			temp = (nodeklien *)malloc(sizeof(nodeklien));
-			temp->alamatklien = alamatklien;
-			strcpy(temp->namaklien, namaklien);
-			temp->client_socket_fd = client_socket_fd;
-			temp->ptr_thread_terima = ptr_thread_terima;
-			temp->next = NULL;
-			temp->prev = simpanklien.belakang;
-			temp->number = simpanklien.number_now;
-			simpanklien.belakang->next = temp;
-			simpanklien.belakang = temp;
-		}
-		simpanklien.jumlah++;
-		simpanklien.number_now++;
+		simpanklien.depan = (nodeklien *)malloc(sizeof(nodeklien));
+		simpanklien.depan->alamatklien = alamatklien;
+		strcpy(simpanklien.depan->namaklien, namaklien);
+		simpanklien.depan->client_socket_fd = client_socket_fd;
+		//simpanklien.depan->ptr_thread_terima = ptr_thread_terima;
+		simpanklien.depan->next = NULL;
+		simpanklien.depan->prev = NULL;
+		simpanklien.belakang = simpanklien.depan;
 	}
-	void deleteAtNumber(int number)
+	else
 	{
-		if (simpanklien.jumlah==0) return;		
-		else if (simpanklien.jumlah==1)
-		{
-			free(simpanklien.depan);
-			simpanklien.depan = NULL;
-			simpanklien.belakang = NULL;
-			simpanklien.jumlah = 0;
-		}
-		else
-		{
-			nodeklien * temp;
-			temp = simpanklien.depan;
-			while (temp!=NULL && number!=temp->number)
-			{
-				temp = temp->next;
-			}
-			if (temp==simpanklien.depan)
-			{
-				temp->next->prev = NULL;
-				simpanklien.depan = temp->next;
-				free(temp);
-			}
-			else if (temp==simpanklien.belakang)
-			{
-				temp->prev->next = NULL;
-				simpanklien.belakang = temp->prev;
-				free(temp);
-			}
-			else
-			{
-				temp->prev->next = temp->next;
-				temp->next->prev = temp->prev;
-				free(temp);
-			}
-			simpanklien.jumlah--;
-		}
+		nodeklien * temp;
+		temp = (nodeklien *)malloc(sizeof(nodeklien));
+		temp->alamatklien = alamatklien;
+		strcpy(temp->namaklien, namaklien);
+		temp->client_socket_fd = client_socket_fd;
+		//temp->ptr_thread_terima = ptr_thread_terima;
+		temp->next = NULL;
+		temp->prev = simpanklien.belakang;
+		simpanklien.belakang->next = temp;
+		simpanklien.belakang = temp;
 	}
-	nodeklien atNumber(int number)
+	simpanklien.jumlah++;
+}
+void deleteNodeklienByName(char nama[])
+{
+	if (simpanklien.jumlah==0) return;		
+	else if (simpanklien.jumlah==1)
+	{
+		free(simpanklien.depan);
+		simpanklien.depan = NULL;
+		simpanklien.belakang = NULL;
+		simpanklien.jumlah = 0;
+	}
+	else 
 	{
 		nodeklien * temp;
 		temp = simpanklien.depan;
-		while (temp!=NULL && number!=temp->number)
+		while (temp!=NULL && strcmp(nama,temp->namaklien)!=0)
 		{
 			temp = temp->next;
+		}	
+		if (temp==simpanklien.depan)
+		{
+			temp->next->prev = NULL;
+			simpanklien.depan = temp->next;
+			free(temp);
 		}
-		return *temp;
+		else if	(temp==simpanklien.belakang)
+		{
+			temp->prev->next = NULL;
+			simpanklien.belakang = temp->prev;
+			free(temp);
+		}
+		else
+		{
+			temp->prev->next = temp->next;
+			temp->next->prev = temp->prev;
+			free(temp);
+		}
+		simpanklien.jumlah--;
 	}
-	nodeklien atIndex(int index)
+}
+nodeklien getNodeklienByName(char nama[])
+{
+	nodeklien * temp;
+	temp = simpanklien.depan;
+	while (temp!=NULL && strcmp(nama,temp->namaklien)!=0)
 	{
-		int i,j;
-		nodeklien * temp;
-		temp = simpanklien.depan;
-		for (i=0;i<index;i++)
-		{
-			temp = temp->next;
-		}
-		return *temp;
+		temp = temp->next;
 	}
+	return *temp;
+}
+nodeklien getNodeklienByIndex(int index)
+{
+	int i,j;
+	nodeklien * temp;
+	temp = simpanklien.depan;
+	for (i=0;i<index;i++)
+	{
+		temp = temp->next;
+	}
+	return *temp;
+}
+
+typedef struct akunklien
+{
+	char namaklien[500];
+	char hashed_password[500];
+	struct akunklien * next;
+	struct akunklien * prev;
+} akunklien;
+
+typedef struct basisdataklien_t
+{
+	int jumlah;
+	akunklien * depan;
+	akunklien * belakang;	
+} basisdataklien_t;
+
+basisdataklien_t basisdataklien;
+
+void push_back2( char namaklien[], 
+		char hashed_password[])  
+{
+	if (basisdataklien.jumlah==0)
+	{
+		basisdataklien.depan = (akunklien *)malloc(sizeof(akunklien));
+		strcpy(basisdataklien.depan->namaklien, namaklien);
+		strcpy(basisdataklien.depan->hashed_password, hashed_password);
+		basisdataklien.depan->next = NULL;
+		basisdataklien.depan->prev = NULL;
+		basisdataklien.belakang = basisdataklien.depan;
+	}
+	else
+	{
+		akunklien * temp;
+		temp = (akunklien *)malloc(sizeof(akunklien));
+		strcpy(temp->namaklien, namaklien);
+		strcpy(temp->hashed_password, hashed_password);
+		temp->next = NULL;
+		temp->prev = basisdataklien.belakang;
+		basisdataklien.belakang->next = temp;
+		basisdataklien.belakang = temp;
+	}
+	basisdataklien.jumlah++;
+}
+
+akunklien getAkunklienByName(char nama[])
+{
+	akunklien * temp;
+	temp = basisdataklien.depan;
+	while (temp!=NULL && strcmp(nama,temp->namaklien)!=0)
+	{
+		temp = temp->next;
+	}
+	return *temp;
+}
 
 typedef struct argu_t
 {
-	int thread_id_number;
+	char nama[500];
 	char message[1000];
 } argu_t;
+argu_t argu_var[300];
+int index_argu_var = 0;
+pthread_t thread[300];
+int index_thread = 0;
 
 void * sendToClient(void * ptr_argument)
 {
 	puts ("fungsi sendToClient berhasil dijalankan");
 	argu_t * ptr_argu_var = (argu_t *)ptr_argument;
-	int thread_id_number = ptr_argu_var->thread_id_number;
+	char namatujuan[500];
+	strcpy(namatujuan, ptr_argu_var->nama);
 	char pesan[200];
 	strcpy(pesan,ptr_argu_var->message);
-	write(atNumber(thread_id_number).client_socket_fd, pesan, strlen(pesan));
+	strcat(pesan, "\r");	
+
+	write(getNodeklienByName(namatujuan).client_socket_fd, pesan, strlen(pesan));
 	return NULL;
 }
 
 void * receiveFromClient(void * ptr_argument)
 {
 	puts ("fungsi receiveFromClient berhasil dijalankan");
-	int * ptr_thread_id_number = (int *)ptr_argument;
-	int thread_id_number = *ptr_thread_id_number - 1;
+	argu_t * ptr_argu_var = (argu_t *)ptr_argument;
+	char namasumber[500];
+	strcpy(namasumber,ptr_argu_var->nama);
 	while (1)
 	{
 		int banyak_byte;
-		char pesantemp[100];
+		char karakterpesan;
 		char pesan[200];
+		int iter = 0;
+		int isBroadcast = 1;
+		int posisiAt = -1;
 		strcpy(pesan,"");
-		while ((banyak_byte = read(atNumber(thread_id_number).client_socket_fd, pesantemp, 90))>0)
+		while ((banyak_byte = read(getNodeklienByName(namasumber).client_socket_fd, &karakterpesan, 1))>0)
 		{
-			pesantemp[banyak_byte] = '\0';
-			strcat(pesan,pesantemp);
+			if (karakterpesan=='@') posisiAt = iter; 			
+			if (karakterpesan=='\r') break;			
+			pesan[iter] = karakterpesan;
+			iter++;
 		}
-		char * tujuan = strstr(pesan,"@");
-		if (tujuan!=NULL)
+		pesan[iter] = '\0';
+		char * ptr_cek = strstr(pesan,"@");
+		if (strcmp(pesan,"++**Exit++**")==0)
 		{
+			close(getNodeklienByName(namasumber).client_socket_fd);
+			deleteNodeklienByName(namasumber);
+			
+			char online_users[1000];
+			int i,j;
+			strcpy(online_users,"");
+			for (i=0;i<simpanklien.jumlah;i++)
+			{
+				strcat(online_users,"\n");
+				nodeklien nk = getNodeklienByIndex(i);
+				strcat(online_users,nk.namaklien);
+			}
+			for (i=0;i<simpanklien.jumlah;i++)
+			{
+				nodeklien nk = getNodeklienByIndex(i);
+				strcpy(argu_var[index_argu_var].nama, nk.namaklien);
+				strcpy(argu_var[index_argu_var].message, online_users);
+				pthread_create(&thread[index_thread], NULL, sendToClient, (void *)&argu_var[index_argu_var]);
+				index_argu_var++;
+				index_thread++;
+			}
+			return NULL;
+		}
+		else if (ptr_cek!=NULL)
+		{
+			//puts ("error 1");
+			char tujuan[200];
+			//puts ("error 2");
+			strcpy(tujuan,ptr_cek);
+			//puts ("error 3");			
 			int panjang = strlen(tujuan);
 			int i,j;
 			for (i=0;i<panjang;i++)
 			{
 				tujuan[i] = tujuan[i+1];
 			}
+			pesan[posisiAt] = '\0';
 			for (i=0;i<simpanklien.jumlah;i++)
 			{
-				nodeklien nk = atIndex(i); 
+				nodeklien nk = getNodeklienByIndex(i); 
 				if (strcmp(tujuan,nk.namaklien)==0)
 				{
-					pthread_t thread;
-					argu_t argu_var;
-					argu_var.thread_id_number = atIndex(i).number;
-					strcpy(argu_var.message, pesan);
-					pthread_create(&thread, NULL, sendToClient, (void *)&argu_var);	
+					//pthread_t thread;
+					//argu_t argu_var;
+					strcpy(argu_var[index_argu_var].nama, nk.namaklien);
+					strcpy(argu_var[index_argu_var].message, pesan);
+					pthread_create(&thread[index_thread], NULL, sendToClient, (void *)&argu_var[index_argu_var]);
+					index_argu_var++;
+					index_thread++;	
 				}
 			}
 		}
 		else
 		{
 			int i,j;
-			pthread_t thread[simpanklien.jumlah];
-			argu_t argu_var[simpanklien.jumlah];
+			//pthread_t thread[simpanklien.jumlah];
+			//argu_t argu_var[simpanklien.jumlah];
 			for (i=0;i<simpanklien.jumlah;i++)
 			{
-				argu_var[i].thread_id_number = atIndex(i).number;
-				strcpy(argu_var[i].message, pesan);
-				pthread_create(&thread[i], NULL, sendToClient, (void *)&argu_var[i]);
+				nodeklien nk = getNodeklienByIndex(i); 
+				strcpy(argu_var[index_argu_var].nama, nk.namaklien);
+				strcpy(argu_var[index_argu_var].message, pesan);
+				pthread_create(&thread[index_thread], NULL, sendToClient, (void *)&argu_var[index_argu_var]);
+				index_argu_var++;
+				index_thread++;
 			}
 		}
 	}
@@ -193,8 +293,11 @@ void * receiveFromClient(void * ptr_argument)
 
 int main ()
 {
+	basisdataklien.jumlah = 0;
+	basisdataklien.depan = NULL;
+	basisdataklien.belakang = NULL;
+
 	simpanklien.jumlah = 0;
-	simpanklien.number_now = 1;
 	simpanklien.depan = NULL;
 	simpanklien.belakang = NULL;
 
@@ -217,20 +320,23 @@ int main ()
 		bzero(&clientaddress,sizeof(clientaddress));
 		listen (socket_fd,20);
 		client_socket_fd = accept(socket_fd,(struct sockaddr*)&clientaddress,(socklen_t*)&ukuran_client);
-		puts ("ada yang masuk");
+		//puts ("ada yang masuk");
 		char namaklien[500];
-		char namaklientemp[200];
+		char karakternamaklien;
+		int iter = 0;
 		int banyak_byte;
 		strcpy(namaklien, "");
-		puts ("test lagi");
-		while ((banyak_byte = read(client_socket_fd, namaklientemp, 150))>0)
+		//puts ("test lagi");
+		while ((banyak_byte = read(client_socket_fd, &karakternamaklien, 1))>0)
 		{
-			namaklientemp[banyak_byte] = '\0';
-			strcat(namaklien, namaklientemp);
+			if (karakternamaklien=='\r') break;
+			namaklien[iter] = karakternamaklien;
+			iter++;
 		}
-		puts ("tes lagi 2");
-		pthread_t * ptr_thread_terima = (pthread_t *)malloc(sizeof(pthread_t));				
-		push_back(clientaddress, namaklien, client_socket_fd, ptr_thread_terima);
+		namaklien[iter] = '\0';
+		//puts ("tes lagi 2");
+		//pthread_t * ptr_thread_terima = (pthread_t *)malloc(sizeof(pthread_t));				
+		push_back(clientaddress, namaklien, client_socket_fd);
 		
 		char online_users[1000];
 		int i,j;
@@ -238,20 +344,25 @@ int main ()
 		for (i=0;i<simpanklien.jumlah;i++)
 		{
 			strcat(online_users,"\n");
-			nodeklien nk = atIndex(i);
+			nodeklien nk = getNodeklienByIndex(i);
 			strcat(online_users,nk.namaklien);
 		}
-		pthread_t thread[simpanklien.jumlah];
-		argu_t argu_var[simpanklien.jumlah];
+		//pthread_t thread[simpanklien.jumlah];
+		//argu_t argu_var[simpanklien.jumlah];
 		for (i=0;i<simpanklien.jumlah;i++)
 		{
-			argu_var[i].thread_id_number = atIndex(i).number;
-			strcpy(argu_var[i].message, online_users);
-			pthread_create(&thread[i], NULL, sendToClient, (void *)&argu_var[i]);
-		}		
-		
-		pthread_create(ptr_thread_terima, NULL, receiveFromClient, (void *)&simpanklien.number_now);
-		puts ("berhasil lewat sampe akhir looping");
+			nodeklien nk = getNodeklienByIndex(i);
+			strcpy(argu_var[index_argu_var].nama, nk.namaklien);
+			strcpy(argu_var[index_argu_var].message, online_users);
+			//argu_var[i].thread_id_number = getNodeklienByIndex(i).number;
+			pthread_create(&thread[index_thread], NULL, sendToClient, (void *)&argu_var[index_argu_var]);
+			printf ("halo halo\n");
+			index_argu_var++;
+			index_thread++;
+		}
+		strcpy(argu_var[index_argu_var].nama, namaklien);	
+		pthread_create(&thread[index_thread], NULL, receiveFromClient, (void *)&argu_var[index_argu_var]);
+		//puts ("berhasil lewat sampe akhir looping");
 	}
 	return 0;	
 }
