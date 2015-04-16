@@ -287,7 +287,7 @@ public class UI_Server extends javax.swing.JFrame {
                     String klien = eserv.clients[i].nama;
                     if(klien.equalsIgnoreCase(jeneng))
                     {
-                        eserv.clients[i].output.writeUTF("QUIT");
+                        //eserv.clients[i].output.writeUTF("QUIT");
                         eserv.clients[i].stop();
                         /*eserv.clientCount--;
                         break;*/
